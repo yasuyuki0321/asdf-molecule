@@ -1,0 +1,42 @@
+---
+- name: add infra group
+  ansible.builtin.group:
+    name: infra
+    state: present
+    gid: 1002
+
+- name: add infra user
+  ansible.builtin.user:
+    name: infra
+    uid: 1002
+    group: infra
+
+- name: install tools
+  yum:
+    name:
+      - git
+      - curl
+    state: present
+
+- name: install asdf
+  git:
+    repo: https://github.com/asdf-vm/asdf.git
+    version: v0.9.0
+    dest: /home/infra/.asdf
+
+- name: change ownership
+  file:
+    path: "/home/infra/.asdf"
+    owner: "infra"
+    group: "infra"
+    state: directory
+    recurse: yes
+
+- name: 末尾に複数行追加
+  lineinfile:
+    dest: "/home/infra/.bashrc"
+    line: "{{ item }}"
+  with_items:
+    - ". $HOME/.asdf/asdf.sh"
+    - ". $HOME/.asdf/completions/asdf.bash"
+
